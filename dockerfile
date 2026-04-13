@@ -28,8 +28,12 @@ COPY . .
 RUN composer install --no-dev --optimize-autoloader
 
 # Laravel setup (optional safe mode)
+# Catatan: Di produksi, sebaiknya .env diatur via Environment Variables di Dashboard Render
 RUN cp .env.example .env || true
 RUN php artisan key:generate || true
+
+# Membuat symbolic link untuk foto profil (PERBAIKAN FOTO)
+RUN php artisan storage:link
 
 # Permission
 RUN chmod -R 775 storage bootstrap/cache
@@ -37,5 +41,5 @@ RUN chmod -R 775 storage bootstrap/cache
 # Expose port (Render akan override biasanya)
 EXPOSE 8000
 
-# Start Laravel
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# Start Laravel dengan Migrasi Otomatis (PERBAIKAN DATABASE & RUNTIME)
+CMD sh -c "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"
